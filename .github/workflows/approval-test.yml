@@ -1,0 +1,30 @@
+name: Personal Review & Deployment Test
+
+on:
+  push:
+    branches:
+      - main  # Aapki repo ki primary branch
+
+jobs:
+  notify-n8n:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Alert via n8n
+        run: |
+          curl -X POST https://n8n.imaginationai.net/webhook-test/github-testapp-approval \
+          -H 'Content-Type: application/json' \
+          -d '{
+            "pusher": "${{ github.actor }}",
+            "commit_msg": "${{ github.event.head_commit.message }}",
+            "repo_name": "muhammad-anas65/testapp",
+            "review_url": "https://github.com/muhammad-anas65/testapp/actions"
+          }'
+
+  waiting-for-it:
+    name: Waiting for Personal Approval
+    needs: notify-n8n
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Approve to Proceed
+        run: echo "Review complete for testapp. Ready to deploy!"

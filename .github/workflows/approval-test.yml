@@ -1,30 +1,36 @@
-name: Personal Review & Deployment Test
+name: Secure Deployment with IT Approval
 
 on:
   push:
     branches:
-      - main  # Aapki repo ki primary branch
+      - main
 
 jobs:
-  notify-n8n:
+  # JOB 1: Sirf IT ko alert bhejti hai
+  notify-it-team:
     runs-on: ubuntu-latest
     steps:
-      - name: Alert via n8n
+      - name: Alert n8n
         run: |
           curl -X POST https://n8n.imaginationai.net/webhook/github-testapp-manager \
           -H 'Content-Type: application/json' \
           -d '{
             "pusher": "${{ github.actor }}",
             "commit_msg": "${{ github.event.head_commit.message }}",
-            "repo_name": "muhammad-anas65/testapp",
-            "review_url": "https://github.com/muhammad-anas65/testapp/actions"
+            "repo_name": "${{ github.repository }}",
+            "review_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           }'
 
-  waiting-for-it:
-    name: Waiting for Personal Approval
-    needs: notify-n8n
+  # JOB 2: Ye tab tak nahi chalegi jab tak aap Approve nahi karte
+  deploy-to-hostinger:
+    name: Actual Deployment
+    needs: notify-it-team
     runs-on: ubuntu-latest
-    environment: production
+    # YE SABSE ZAROORI LINE HAI:
+    environment: production 
     steps:
-      - name: Approve to Proceed
-        run: echo "Review complete for testapp. Ready to deploy!"
+      - name: Final Code Push
+        run: |
+          echo "Processing files..."
+          echo "Deploying to Hostinger via FTP..."
+          # Yahan aapka Hostinger wala actual deployment code aayega
